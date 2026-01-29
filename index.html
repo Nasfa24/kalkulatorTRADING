@@ -3,186 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Trading Lengkap</title>
+    <title>Kalkulator Anti Rungkad</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #1f2937; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; color: #4b5563; font-weight: 600; }
-        input, select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 0.75rem; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 1rem; }
-        button:hover { background-color: #1d4ed8; }
+        .card { background: white; padding: 0; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 420px; overflow: hidden; }
         
+        /* TAB STYLE */
+        .tabs { display: flex; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+        .tab-btn { flex: 1; padding: 1rem; border: none; background: none; font-weight: 600; color: #6b7280; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { color: #2563eb; border-bottom: 3px solid #2563eb; background: white; }
+        .tab-btn:hover { background: #eff6ff; }
+
+        .content { padding: 2rem; display: none; }
+        .content.active { display: block; }
+
+        h2 { text-align: center; color: #1f2937; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #4b5563; font-weight: 600; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        
+        /* BUTTONS */
+        .btn-calc { width: 100%; padding: 0.75rem; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 1rem; }
+        .btn-calc:hover { background-color: #1d4ed8; }
+        .btn-update { background-color: #059669; }
+        .btn-update:hover { background-color: #047857; }
+
+        /* RESULTS */
         .result-box { margin-top: 1.5rem; padding: 1rem; background-color: #eff6ff; border-radius: 8px; border-left: 4px solid #2563eb; display: none; }
+        .result-box.manager { background-color: #ecfdf5; border-left: 4px solid #059669; }
+        
         .result-item { margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; }
         .result-val { font-weight: bold; color: #111827; display: flex; flex-direction: column; align-items: flex-end; }
         
-        /* Styling Pips */
-        .pips-info { font-size: 0.75rem; font-weight: normal; color: #6b7280; margin-top: 2px; }
-        
-        /* Warna Khusus */
-        .sl-text { color: #ef4444; } /* Merah */
-        .tp-text { color: #059669; } /* Hijau */
-        
-        /* Lot Size Besar */
-        .lot-badge { font-size:1.4em; color:#2563eb; background: #dbeafe; padding: 2px 8px; border-radius:4px; font-weight: 800; }
+        .sl-text { color: #ef4444; } 
+        .tp-text { color: #059669; }
+        .sl-plus-text { color: #2563eb; font-weight: 800; } 
 
-        .risk-warning { font-size: 0.8rem; color: #6b7280; margin-top: 15px; text-align: center; font-style: italic;}
-        hr { border: 0; border-top: 1px solid #dbeafe; margin: 10px 0; }
+        .lot-badge { font-size:1.3em; color:#2563eb; background: #dbeafe; padding: 2px 8px; border-radius:4px; font-weight: 800; }
+        .pips-info { font-size: 0.75rem; color: #6b7280; font-weight: normal; }
+
+        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 10px 0; }
+        .risk-warning { font-size: 0.75rem; color: #6b7280; margin-top: 15px; text-align: center; font-style: italic;}
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🛡️ Pro Risk Calculator</h2>
-    
-    <div class="form-group">
-        <label>Modal ($)</label>
-        <input type="number" id="modal" placeholder="Contoh: 100" required>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab1')">1. Plan Awal</button>
+        <button class="tab-btn" onclick="switchTab('tab2')">2. Pantau Posisi</button>
     </div>
 
-    <div class="form-group">
-        <label>Posisi</label>
-        <select id="posisi">
-            <option value="BUY">BUY (Long)</option>
-            <option value="SELL">SELL (Short)</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Harga Entry</label>
-        <input type="number" id="entry" placeholder="Contoh: 6254" step="any" required>
-    </div>
-
-    <div class="form-group">
-        <label>Resiko per Trade</label>
-        <select id="resiko">
-            <option value="0.01">1% (Konservatif)</option>
-            <option value="0.02">2% (Moderat)</option>
-            <option value="0.03">3% (Agresif)</option>
-            <option value="0.04">4% (Sangat Agresif)</option>
-        </select>
-    </div>
-
-    <button onclick="hitung()">Hitung Plan</button>
-
-    <div id="hasil" class="result-box">
-        <div class="result-item">
-            <span>Resiko ($):</span>
-            <span class="result-val" id="resikoDolar">-</span>
-        </div>
-        <div class="result-item">
-            <span>Rekomendasi Lot:</span>
-            <span class="lot-badge" id="recLot">-</span>
-        </div>
+    <div id="tab1" class="content active">
+        <h2>🛡️ KALKULATOR ANTI RUNGKAD</h2>
         
-        <hr>
-        
-        <div class="result-item">
-            <span style="font-weight:bold;">STOP LOSS</span>
-            <div class="result-val sl-text">
-                <span id="recSL">-</span>
-                <span class="pips-info" id="pipsSL"></span>
-            </div>
+        <div class="form-group">
+            <label>Modal ($)</label>
+            <input type="number" id="modal" placeholder="Contoh: 100" required>
         </div>
-        
-        <hr>
-
-        <div class="result-item">
-            <span>Target 1 (1:1)</span>
-            <div class="result-val tp-text">
-                <span id="recTP1">-</span>
-                <span class="pips-info" id="pipsTP1"></span>
-            </div>
+        <div class="form-group">
+            <label>Posisi</label>
+            <select id="posisi">
+                <option value="BUY">BUY (Long)</option>
+                <option value="SELL">SELL (Short)</option>
+            </select>
         </div>
-
-        <div class="result-item">
-            <span>Target 2 (1:2)</span>
-            <div class="result-val tp-text">
-                <span id="recTP2">-</span>
-                <span class="pips-info" id="pipsTP2"></span>
-            </div>
+        <div class="form-group">
+            <label>Harga Entry</label>
+            <input type="number" id="entry" placeholder="Contoh: 6758" step="any">
+        </div>
+        <div class="form-group">
+            <label>Resiko (%)</label>
+            <select id="resiko">
+                <option value="0.01">1% (Konservatif)</option>
+                <option value="0.02">2% (Moderat)</option>
+                <option value="0.03">3% (Agresif)</option>
+                <option value="0.04">4% (Sangat Agresif)</option>
+            </select>
         </div>
 
-        <div class="result-item">
-            <span>Target 3 (1:3)</span>
-            <div class="result-val tp-text">
-                <span id="recTP3">-</span>
-                <span class="pips-info" id="pipsTP3"></span>
+        <button class="btn-calc" onclick="hitungPlan()">Hitung Lot & SL</button>
+
+        <div id="hasilPlan" class="result-box">
+            <div class="result-item">
+                <span>Resiko ($):</span><span class="result-val" id="resikoDolar">-</span>
+            </div>
+            <div class="result-item">
+                <span>Rekomendasi Lot:</span><span class="lot-badge" id="recLot">-</span>
+            </div>
+            <hr>
+            <div class="result-item">
+                <span style="font-weight:bold;">STOP LOSS</span>
+                <div class="result-val sl-text">
+                    <span id="recSL">-</span>
+                    <span class="pips-info" id="pipsSL"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="result-item">
+                <span>TP 1 (1:1)</span>
+                <div class="result-val tp-text">
+                    <span id="recTP1">-</span>
+                    <span class="pips-info" id="pipsTP1"></span>
+                </div>
+            </div>
+            <div class="result-item">
+                <span>TP 2 (1:2)</span>
+                <div class="result-val tp-text">
+                    <span id="recTP2">-</span>
+                    <span class="pips-info" id="pipsTP2"></span>
+                </div>
+            </div>
+            <div class="result-item">
+                <span>TP 3 (1:3)</span>
+                <div class="result-val tp-text">
+                    <span id="recTP3">-</span>
+                    <span class="pips-info" id="pipsTP3"></span>
+                </div>
+            </div>
+        </div>
+        <p class="risk-warning">Note: Lot dibulatkan ke atas (Safety First).</p>
+    </div>
+
+    <div id="tab2" class="content">
+        <h2>🚀 Update SL / TP</h2>
+        <p style="font-size:0.9rem; color:#666; text-align:center;">Gunakan saat posisi sedang Running Profit.</p>
+
+        <div class="form-group">
+            <label>Jenis Order</label>
+            <select id="m_posisi">
+                <option value="BUY">BUY (Long)</option>
+                <option value="SELL">SELL (Short)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Harga Entry Awal</label>
+            <input type="number" id="m_entry" placeholder="Contoh: 6758" step="any">
+        </div>
+        <div class="form-group">
+            <label>Harga Running Sekarang</label>
+            <input type="number" id="m_running" placeholder="Contoh: 6940" step="any">
+        </div>
+
+        <button class="btn-calc btn-update" onclick="hitungManager()">Cek Status Trade</button>
+
+        <div id="hasilManager" class="result-box manager">
+            <div class="result-item">
+                <span>Status Profit:</span>
+                <span class="result-val" style="color:#059669;" id="statusProfit">-</span>
+            </div>
+            <hr>
+            <div class="result-item">
+                <span>🛡️ SL BARU (Lock):</span>
+                <div class="result-val sl-plus-text">
+                    <span id="newSL">-</span>
+                    <span class="pips-info">Aman & Terkunci</span>
+                </div>
+            </div>
+            <div class="result-item">
+                <span>💡 Saran Tindakan:</span>
+                <span class="result-val" style="font-size:0.9em; text-align:right;" id="saranAction">-</span>
             </div>
         </div>
     </div>
-    
-    <p class="risk-warning">Note: Lot dibulatkan ke atas (Safety First).</p>
 </div>
 
 <script>
-    function hitung() {
-        // Ambil Input
+    function switchTab(tabId) {
+        document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function hitungPlan() {
         let modal = parseFloat(document.getElementById('modal').value);
         let posisi = document.getElementById('posisi').value;
         let entry = parseFloat(document.getElementById('entry').value);
-        let resikoPersen = parseFloat(document.getElementById('resiko').value);
+        let resiko = parseFloat(document.getElementById('resiko').value);
 
-        if (isNaN(modal) || isNaN(entry)) {
-            alert("Masukkan angka yang valid!");
-            return;
-        }
+        if(!modal || !entry) { alert("Lengkapi data!"); return; }
 
-        // 1. Hitung Nominal Resiko
-        let uangResiko = modal * resikoPersen;
-
-        // 2. Tentukan Jarak Pips (Default 1% dari harga Entry)
-        // Jarak ini kita anggap sebagai 1R
-        let jarakHarga = entry * 0.01; 
-
+        let uangResiko = modal * resiko;
+        let jarak = entry * 0.01; 
         let sl, tp1, tp2, tp3;
 
-        // Logika Hitung Harga
         if (posisi === "BUY") {
-            sl = entry - jarakHarga;
-            tp1 = entry + (jarakHarga * 1);
-            tp2 = entry + (jarakHarga * 2);
-            tp3 = entry + (jarakHarga * 3);
+            sl = entry - jarak;
+            tp1 = entry + (jarak * 1);
+            tp2 = entry + (jarak * 2);
+            tp3 = entry + (jarak * 3);
         } else {
-            // SELL
-            sl = entry + jarakHarga;
-            tp1 = entry - (jarakHarga * 1);
-            tp2 = entry - (jarakHarga * 2);
-            tp3 = entry - (jarakHarga * 3);
+            sl = entry + jarak;
+            tp1 = entry - (jarak * 1);
+            tp2 = entry - (jarak * 2);
+            tp3 = entry - (jarak * 3);
         }
 
-        // 3. Hitung Size (Pembulatan ke Atas)
-        let rawSize = uangResiko / jarakHarga;
-        let size = Math.ceil(rawSize * 100) / 100;
-        if (size < 0.01) size = 0.01;
+        let lot = Math.ceil((uangResiko / jarak) * 100) / 100;
+        if(lot < 0.01) lot = 0.01;
 
-        // --- TAMPILKAN HASIL ---
-        document.getElementById('hasil').style.display = 'block';
-        
-        // Info Dasar
+        document.getElementById('hasilPlan').style.display = 'block';
         document.getElementById('resikoDolar').innerText = "$" + uangResiko.toFixed(2);
-        document.getElementById('recLot').innerText = size.toFixed(2) + " Lot";
-
-        // Fungsi Helper untuk Format Pips
-        // Kita menggunakan toFixed(1) agar tidak terlalu panjang
+        document.getElementById('recLot').innerText = lot.toFixed(2) + " Lot";
         
-        // STOP LOSS
         document.getElementById('recSL').innerText = "❌ " + sl.toFixed(2);
-        document.getElementById('pipsSL').innerText = "(" + jarakHarga.toFixed(1) + " Pips)";
-
-        // TP 1
+        document.getElementById('pipsSL').innerText = "(" + jarak.toFixed(1) + " Pips)";
         document.getElementById('recTP1').innerText = "✅ " + tp1.toFixed(2);
-        document.getElementById('pipsTP1').innerText = "(+" + jarakHarga.toFixed(1) + " Pips)";
-
-        // TP 2
+        document.getElementById('pipsTP1').innerText = "(+" + jarak.toFixed(1) + " Pips)";
         document.getElementById('recTP2').innerText = "✅ " + tp2.toFixed(2);
-        document.getElementById('pipsTP2').innerText = "(+" + (jarakHarga * 2).toFixed(1) + " Pips)";
-
-        // TP 3
+        document.getElementById('pipsTP2').innerText = "(+" + (jarak*2).toFixed(1) + " Pips)";
         document.getElementById('recTP3').innerText = "✅ " + tp3.toFixed(2);
-        document.getElementById('pipsTP3').innerText = "(+" + (jarakHarga * 3).toFixed(1) + " Pips)";
+        document.getElementById('pipsTP3').innerText = "(+" + (jarak*3).toFixed(1) + " Pips)";
+    }
+
+    function hitungManager() {
+        let posisi = document.getElementById('m_posisi').value;
+        let entry = parseFloat(document.getElementById('m_entry').value);
+        let running = parseFloat(document.getElementById('m_running').value);
+
+        if(!entry || !running) { alert("Lengkapi harga Entry dan Running!"); return; }
+
+        let pipsProfit = 0;
+        let newSL = 0;
+
+        if (posisi === "BUY") {
+            pipsProfit = running - entry;
+            newSL = entry + (pipsProfit * 0.8);
+        } else {
+            pipsProfit = entry - running;
+            newSL = entry - (pipsProfit * 0.8);
+        }
+
+        document.getElementById('hasilManager').style.display = 'block';
+
+        if (pipsProfit <= 0) {
+            document.getElementById('statusProfit').innerText = "Running MINUS ⚠️";
+            document.getElementById('statusProfit').style.color = "red";
+            document.getElementById('newSL').innerText = "Tahan di SL Awal";
+            document.getElementById('saranAction').innerText = "Belum bisa Lock Profit. Patuhi SL awal.";
+        } else {
+            document.getElementById('statusProfit').innerText = "+" + pipsProfit.toFixed(1) + " Pips 💰";
+            document.getElementById('statusProfit').style.color = "#059669";
+            document.getElementById('newSL').innerText = "Geser SL ke: " + newSL.toFixed(2);
+            
+            if (pipsProfit > 100) {
+                 document.getElementById('saranAction').innerText = "Profit sudah TEBAL! Segera kunci SL+ atau Close Manual sebagian.";
+            } else {
+                 document.getElementById('saranAction').innerText = "Aman. Geser SL ke atas Entry (BEP) sekarang.";
+            }
+        }
     }
 </script>
 
